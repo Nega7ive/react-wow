@@ -16,33 +16,62 @@ export default class FormContainer extends Component {
     var headers = {
       'Authorization': "Basic " + btoa(clientId + ':' + clientSecret)
     };
-    axios.post('https://eu.battle.net/oauth/token', 'grant_type=client_credentials', {headers: headers})
-      .then((resp) => {
-        this.token = resp.data.access_token;
-        const characters = [];
-        axios.get('https://eu.api.blizzard.com/wow/character/Alonsus/Dantezz?fields=reputation&access_token=UScnzMuZQNMe46qRamm9mzZontEMO48NCt')
+    axios.get('http://localhost:5000/api/oauth-token')
         .then((resp) => {
-          characters[resp.data.name] = resp.data;
-          this.setState({ characters });
+            console.log(resp);
+            this.token = resp.data.access_token;
+
+            const characters = [];
+            axios.post('http://localhost:5000/api/reputations/Alonsus/Dantezz', {token: this.token})
+            .then((resp) => {
+                characters[resp.data.name] = resp.data;
+                this.setState({ characters });
+            })
+            .catch((err) => {
+                //TODO
+                console.warn(err);
+            });
+            axios.post('http://localhost:5000/api/reputations/Stormscale/Dantes', {token: this.token})
+            .then((resp) => {
+                characters[resp.data.name] = resp.data;
+                this.setState({ characters });
+            })
+            .catch((err) => {
+                //TODO
+                console.warn(err);
+            });
         })
         .catch((err) => {
-          //TODO
-          console.warn(err);
+            console.log(err);
         });
-        axios.get('https://eu.api.blizzard.com/wow/character/Stormscale/Dantes?fields=reputation&access_token=UScnzMuZQNMe46qRamm9mzZontEMO48NCt')
-        .then((resp) => {
-          characters[resp.data.name] = resp.data;
-          this.setState({ characters });
-        })
-        .catch((err) => {
-          //TODO
-          console.warn(err);
-        });
-      })
-      .catch((err) => {
-        //TODO
-        console.warn(err);
-      });
+    //axios.get('http://localhost:5000/api/reputations/Dantezz');
+    // axios.post('https://eu.battle.net/oauth/token', 'grant_type=client_credentials', {headers: headers})
+    //   .then((resp) => {
+    //     this.token = resp.data.access_token;
+    //     const characters = [];
+    //     axios.get('https://eu.api.blizzard.com/wow/character/Alonsus/Dantezz?fields=reputation&access_token=UScnzMuZQNMe46qRamm9mzZontEMO48NCt')
+    //     .then((resp) => {
+    //       characters[resp.data.name] = resp.data;
+    //       this.setState({ characters });
+    //     })
+    //     .catch((err) => {
+    //       //TODO
+    //       console.warn(err);
+    //     });
+    //     axios.get('https://eu.api.blizzard.com/wow/character/Stormscale/Dantes?fields=reputation&access_token=UScnzMuZQNMe46qRamm9mzZontEMO48NCt')
+    //     .then((resp) => {
+    //       characters[resp.data.name] = resp.data;
+    //       this.setState({ characters });
+    //     })
+    //     .catch((err) => {
+    //       //TODO
+    //       console.warn(err);
+    //     });
+    //   })
+    //   .catch((err) => {
+    //     //TODO
+    //     console.warn(err);
+    //   });
   }
 
   standingKeyToText(key) {
