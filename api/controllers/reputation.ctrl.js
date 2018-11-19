@@ -1,5 +1,5 @@
 const Request = require("request"); 
-const Reputation = require("./../models/Reputation");
+//const Reputation = require("./../models/Reputation");
 
 module.exports = {
     getCharacterReputations: (req, res, next) => {
