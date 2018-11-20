@@ -1,7 +1,9 @@
-const oauth = require("./oauth");
-const reputation = require("./reputation");
+import oauth from "./oauth";
+import reputation from "./reputation";
+import rewards from "./rewards";
 
-module.exports = (router) => {
+export default (router) => {
     oauth(router);
     reputation(router);
+    rewards(router);
 }

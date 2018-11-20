@@ -1,10 +1,10 @@
-const OauthController = require("./../controllers/oauth.ctrl");
+import { getToken } from "./../controllers/oauth.ctrl";
 
-module.exports = (router) => {
+export default (router) => {
     /**
      * get character reputations
      */
     router
         .route('/oauth-token')
-        .get(OauthController.getToken);
+        .get(getToken);
 }

@@ -1,5 +1,6 @@
-const Request = require('request');
-var env = require('node-env-file');
+import Request from 'request';
+import env from 'node-env-file';
+
 env('.env');
 
 module.exports = {

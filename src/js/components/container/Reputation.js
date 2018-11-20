@@ -1,19 +1,19 @@
 import React, { Component } from "react";
-import ReactDOM from "react-dom";
 import axios from 'axios';
+import Rewards from './Rewards';
 
 export default class FormContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      characters: []
+      characters: [],
+      repId: null
     };
   }
 
   componentDidMount() {
     axios.get('http://localhost:5000/api/oauth-token')
       .then((resp) => {
-          console.log(resp);
           this.token = resp.data.access_token;
 
           const characters = [];
@@ -112,16 +112,22 @@ export default class FormContainer extends Component {
   render() {
     return (
       <div className="row">
-        {
-          Object.keys(this.state.characters).map(name => {
-            return (
-              <div className="col-md-4">
-                <div><strong>{name}</strong> (lvl {this.state.characters[name].level} {this.classKeytoText(this.state.characters[name].class)})</div>
-                <div>Last Modified: {new Intl.DateTimeFormat('en-GB', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(this.state.characters[name].lastModified)}</div>
-                {
-                  this.state.characters[name].reputation.map(rep => {
-                    return (
-                      <div>
+      {
+        Object.keys(this.state.characters).map(name => {
+          return (
+            <div className="col-md-4">
+              <p>
+                <strong>{name}</strong> (lvl {this.state.characters[name].level} {this.classKeytoText(this.state.characters[name].class)})
+              </p>
+              <p>
+                Last Modified: {new Intl.DateTimeFormat('en-GB', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(this.state.characters[name].lastModified)}
+              </p>
+              <div id="accordion">
+              {
+                this.state.characters[name].reputation.map(rep => {
+                  return (
+                    <div className="card">
+                      <div className="card-header" id={'heading' + name + rep.id}>
                         <div>{rep.name}</div>
                         <div className="progress position-relative">
                           <div className={'progress-bar bg-' + this.defineRepColor(rep.standing)} role="progressbar" 
@@ -131,14 +137,26 @@ export default class FormContainer extends Component {
                             {this.standingKeyToText(rep.standing)} ({rep.value} / {rep.max})
                           </small>
                         </div>
+                        <button onClick={() => this.setState({repId: rep.id})} className="btn btn-link collapsed" data-toggle="collapse" data-target={'#collapse' + name + rep.id} aria-expanded="false" aria-controls={'collapse' + name + rep.id}>
+                          Rewards
+                        </button>
                       </div>
-                    );
-                  })
-                }
+                      <div id={'collapse' + name + rep.id} className="collapse" aria-labelledby={'heading' + name + rep.id} data-parent="#accordion">
+                        <div className="card-body">
+                          {this.state.repId === rep.id && 
+                            <Rewards rep={rep.id}/>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              }
               </div>
-            );
-          })
-        }
+            </div>
+          );
+        })
+      }
       </div>
     );
   }
