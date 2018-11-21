@@ -1,12 +1,16 @@
 import React, { Component } from "react";
 import axios from 'axios';
 import Rewards from './Rewards';
+import loadingImg from '../../../../images/loading.gif';
 
 export default class FormContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      characters: [],
+      loading: true,
+      character: {
+        reputation: []
+      },
       repId: null
     };
   }
@@ -14,22 +18,14 @@ export default class FormContainer extends Component {
   componentDidMount() {
     axios.get('http://localhost:5000/api/oauth-token')
       .then((resp) => {
-          this.token = resp.data.access_token;
+        this.token = resp.data.access_token;
 
-          const characters = [];
-          axios.post('http://localhost:5000/api/reputations/Alonsus/Dantezz', {token: this.token})
+        axios.post('http://localhost:5000/api/reputations/' + this.props.realm + '/' + this.props.character, {token: this.token})
           .then((resp) => {
-              characters[resp.data.name] = resp.data;
-              this.setState({ characters });
-          })
-          .catch((err) => {
-              //TODO
-              console.warn(err);
-          });
-          axios.post('http://localhost:5000/api/reputations/Stormscale/Dantes', {token: this.token})
-          .then((resp) => {
-              characters[resp.data.name] = resp.data;
-              this.setState({ characters });
+            this.setState({
+              loading: false,
+              character: resp.data
+              });
           })
           .catch((err) => {
               //TODO
@@ -63,28 +59,6 @@ export default class FormContainer extends Component {
     }
   }
 
-  classKeytoText(key) {
-    switch (key) {
-      case 0:
-      default:
-        return 'todo';
-      case 1:
-        return 'Warrior';
-      case 2:
-        return 'todo';
-      case 3:
-        return 'todo';
-      case 4:
-        return 'Rogue';
-      case 5:
-        return 'todo';
-      case 6:
-        return 'todo';
-      case 7:
-        return 'todo';
-    }
-  }
-
   calculatePercentage(rep) {
     if(!rep.max) {
       return 100;
@@ -110,53 +84,40 @@ export default class FormContainer extends Component {
   }
 
   render() {
+    if (this.state.loading) {
+      return (
+        <img style={{ margin: '0 auto' }} className="img-responsive center-block" src={loadingImg} alt="loading..." width="200" />
+      );
+    }
     return (
-      <div className="row">
-      {
-        Object.keys(this.state.characters).map(name => {
-          return (
-            <div className="col-md-4">
-              <p>
-                <strong>{name}</strong> (lvl {this.state.characters[name].level} {this.classKeytoText(this.state.characters[name].class)})
-              </p>
-              <p>
-                Last Modified: {new Intl.DateTimeFormat('en-GB', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(this.state.characters[name].lastModified)}
-              </p>
-              <div id="accordion">
-              {
-                this.state.characters[name].reputation.map(rep => {
-                  return (
-                    <div className="card">
-                      <div className="card-header" id={'heading' + name + rep.id}>
-                        <div>{rep.name}</div>
-                        <div className="progress position-relative">
-                          <div className={'progress-bar bg-' + this.defineRepColor(rep.standing)} role="progressbar" 
-                                style={{width:this.calculatePercentage(rep)+'%'}} aria-valuenow="{rep.value}" aria-valuemin="0" aria-valuemax="{rep.max}">
-                          </div>
-                          <small className="font-weight-bold justify-content-center d-flex position-absolute w-100">
-                            {this.standingKeyToText(rep.standing)} ({rep.value} / {rep.max})
-                          </small>
-                        </div>
-                        <button onClick={() => this.setState({repId: rep.id})} className="btn btn-link collapsed" data-toggle="collapse" data-target={'#collapse' + name + rep.id} aria-expanded="false" aria-controls={'collapse' + name + rep.id}>
-                          Rewards
-                        </button>
-                      </div>
-                      <div id={'collapse' + name + rep.id} className="collapse" aria-labelledby={'heading' + name + rep.id} data-parent="#accordion">
-                        <div className="card-body">
-                          {this.state.repId === rep.id && 
-                            <Rewards rep={rep.id}/>
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              }
+      <div id="accordion">
+      {this.state.character.reputation.map(rep => {
+        return (
+          <div className="card">
+            <div className="card-header" id={'heading' + name + rep.id}>
+              <div>{rep.name}</div>
+              <div className="progress position-relative">
+                <div className={'progress-bar bg-' + this.defineRepColor(rep.standing)} role="progressbar" 
+                      style={{width:this.calculatePercentage(rep)+'%'}} aria-valuenow="{rep.value}" aria-valuemin="0" aria-valuemax="{rep.max}">
+                </div>
+                <small className="font-weight-bold justify-content-center d-flex position-absolute w-100">
+                  {this.standingKeyToText(rep.standing)} ({rep.value} / {rep.max})
+                </small>
+              </div>
+              <button onClick={() => this.setState({repId: rep.id})} className="btn btn-link collapsed" data-toggle="collapse" data-target={'#collapse' + name + rep.id} aria-expanded="false" aria-controls={'collapse' + name + rep.id}>
+                Rewards
+              </button>
+            </div>
+            <div id={'collapse' + name + rep.id} className="collapse" aria-labelledby={'heading' + name + rep.id} data-parent="#accordion">
+              <div className="card-body">
+                {this.state.repId === rep.id && 
+                  <Rewards rep={rep.id}/>
+                }
               </div>
             </div>
-          );
-        })
-      }
+          </div>
+        );
+      })}
       </div>
     );
   }

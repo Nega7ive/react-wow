@@ -2,7 +2,6 @@ import Request from 'request';
 
 module.exports = {
     getCharacterReputations: (req, res, next) => {
-
         Request.get({
             "url": "https://eu.api.blizzard.com/wow/character/" + req.params.realm + "/" + req.params.character + "?fields=reputation&access_token=" + req.body.token,
         }, (error, response, body) => {
